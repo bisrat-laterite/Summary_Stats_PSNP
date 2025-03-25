@@ -27,7 +27,7 @@ print(data.head())
 
 # break
 # #### 
-gc=gspread.service_account(filename='creds.json')
+gc=gspread.service_account(filename='GOOGLE_CREDENTIALS.json')
 key_='1iJ_GDl0FqZxEr2vvi469zUlsVfg3F9AA-Gaw3SmqEt4'
 ### Reading in the specific googles sheets file
 sh=gc.open_by_key(key_)
