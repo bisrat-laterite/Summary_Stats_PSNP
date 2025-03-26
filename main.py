@@ -1032,6 +1032,9 @@ df=df[['today','starttime', 'endtime','cs_enumname_name', 'shifted_starttime', '
 # df.replace('nan', '', inplace=True)
 df.fillna(0, inplace=True)
 df['shifted_starttime']=df['shifted_starttime'].astype(str)
+df['today']=df['today'].astype(str)
+df['starttime']=df['starttime'].astype(str)
+df['endtime']=df['endtime'].astype(str)
 df['time_between_two_surveys']=df['time_between_two_surveys'].fillna(-9999)
 df['distance_m']=df['distance_m'].fillna(-9999)
 # Get the number of rows and columns in the DataFrame
