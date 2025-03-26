@@ -965,7 +965,7 @@ for value, data_csv in data_csv.groupby('reg_name'):
 ### Reading the data
 # break
 # #### 
-gc=gspread.service_account(filename='creds.json')
+gc=gspread.service_account(filename='credentials.json')
 key_='1PgTLrYdPySmC-NjIH7j5fPlMy8OMFrLu8nMd_eQYXfc'
 ### Reading in the specific googles sheets file
 sh=gc.open_by_key(key_)
@@ -1050,7 +1050,7 @@ range_ = f"{start_cell}:{end_cell}"
 data = [df.columns.tolist()]+df.values.tolist()
 
 ### updating the google sheet
-gc=gspread.service_account(filename='creds.json')
+gc=gspread.service_account(filename='credentials.json')
 key_='1iJ_GDl0FqZxEr2vvi469zUlsVfg3F9AA-Gaw3SmqEt4'
 ### Reading in the specific googles sheets file
 sh=gc.open_by_key(key_)
