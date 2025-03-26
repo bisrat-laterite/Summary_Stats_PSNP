@@ -27,6 +27,7 @@ jobs:
           pip install pandas==2.0.3
           pip install requests
           pip install openpyxl==3.1.3
+          pip install geopy==2.4.1
 
       - name: Run Python script
         env:

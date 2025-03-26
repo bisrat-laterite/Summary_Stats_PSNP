@@ -4,6 +4,7 @@ import pandas as pd
 import gspread
 import numpy as np
 from collections import Counter
+from geopy.distance import geodesic
 
 
 ### Reading the data
@@ -956,3 +957,104 @@ for value, data_csv in data_csv.groupby('reg_name'):
     sheet=sh.worksheet(f'summary_stats_{value}')
 
     sheet.update(data,range_)
+
+
+
+
+### Meta Data monitoring
+### Reading the data
+# break
+# #### 
+gc=gspread.service_account(filename='creds.json')
+key_='1PgTLrYdPySmC-NjIH7j5fPlMy8OMFrLu8nMd_eQYXfc'
+### Reading in the specific googles sheets file
+sh=gc.open_by_key(key_)
+
+df_pre=sh.worksheet('Data').get_all_records()
+
+# data_gs_=sh.worksheet('Data').get_all_records()
+# _all=sh.worksheet('Data').get_all_values()
+
+# working on the gsheets returned
+df = pd.DataFrame(df_pre)
+
+
+
+#### Converting to the right format
+df['starttime']=pd.to_datetime(df['starttime'])
+df['endtime']=pd.to_datetime(df['endtime'])
+df.rename(columns={'enum_name': 'cs_enumname_name'}, inplace=True)
+
+### keeping surveys where we keep gps
+df=df[~pd.isna(df['m0s1_q17_1latitude'])]
+
+### Sorting by datetime
+df=df.sort_values(by=['cs_enumname_name','starttime'])
+
+### Shifting starttime
+df['shifted_starttime']=df.groupby('cs_enumname_name')['starttime'].shift(-1)
+
+
+df['time_between_two_surveys']=((df['endtime'] - df['shifted_starttime']).dt.total_seconds() / 60)*(-1)
+
+df['time_between_two_surveys'] = df.groupby(['today', 'cs_enumname_name'])['time_between_two_surveys'].transform(lambda x: x.fillna(x.mean()))
+
+### shifting gps
+df['lat_lon']=df[['m0s1_q17_1latitude', 'm0s1_q17_1longitude']].values.tolist()
+df['shifted_gps']=df.groupby('cs_enumname_name')['lat_lon'].shift(-1)
+# df['shifted_gps']=df.groupby('cs_enumname_name')['lat_lon'].shift(-1)
+
+
+df['distance_m'] = df[df['shifted_gps'].notna()].apply(
+    lambda row: geodesic((row['lat_lon'][0], row['lat_lon'][1]), 
+                        (row['shifted_gps'][0], row['shifted_gps'][1])).meters, axis=1)
+
+
+### Intersurvey distance traveled
+df['distance_m'] = df.groupby(['today', 'cs_enumname_name'])['distance_m'].transform(lambda x: x.fillna(x.mean()))
+
+## Phone numbers
+# df[df['m0s2_q8']=="."]["m0s2_q8"]=-99
+# df[df['m0s2_q11']=="."]["m0s2_q11"]=-99
+df['m0s2_q8']=df['m0s2_q8'].astype('str')
+df['m0s2_q11']=df['m0s2_q11'].astype('str')
+df['phone_numbers']=df[['m0s2_q8', 'm0s2_q11']].values.tolist()
+df['phone_numbers']=df['phone_numbers'].apply(lambda x:"".join([y[3:] for y in x if not(y.startswith("-"))]))
+dummies = pd.get_dummies(df['phone_numbers'].str.split('').explode()).groupby(level=0).sum()
+print(df['phone_numbers'].head())
+df = pd.concat([df, dummies], axis=1)
+
+
+
+### Testing 
+df=df[['today','starttime', 'endtime','cs_enumname_name', 'shifted_starttime', 'time_between_two_surveys', 'distance_m','reg_name', 'hhid_confirmed', '0','1','2','3','4','5','6','7','8','9','key']]
+df=df.astype('str')
+# df.replace('nan', '', inplace=True)
+# Get the number of rows and columns in the DataFrame
+num_rows, num_cols = df.shape
+
+# For example, updating from cell A2 (row 2, column 1)
+start_cell = 'A1'
+# Construct the range string
+end_cell_column=num_cols +1
+row_key=dict_[end_cell_column]
+end_cell_row=1 + num_rows
+end_cell=row_key+str(end_cell_row)
+print(end_cell)
+# break
+# end_cell = chr(ord('A') + num_cols - 1) + str(2 + num_rows - 1)
+range_ = f"{start_cell}:{end_cell}"
+
+### converting the data to a list of list
+# Convert DataFrame to list of lists
+data = [df.columns.tolist()]+df.values.tolist()
+
+### updating the google sheet
+gc=gspread.service_account(filename='creds.json')
+key_='1iJ_GDl0FqZxEr2vvi469zUlsVfg3F9AA-Gaw3SmqEt4'
+### Reading in the specific googles sheets file
+sh=gc.open_by_key(key_)
+sheet=sh
+sheet=sh.worksheet(f'_meta_monitoring')
+
+sheet.update(data,range_)
