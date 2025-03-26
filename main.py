@@ -1035,9 +1035,89 @@ df['shifted_starttime']=df['shifted_starttime'].astype(str)
 df['today']=df['today'].astype(str)
 df['starttime']=df['starttime'].astype(str)
 df['endtime']=df['endtime'].astype(str)
-df['time_between_two_surveys']=df['time_between_two_surveys'].fillna(-9999)
-df['distance_m']=df['distance_m'].fillna(-9999)
+# df['time_between_two_surveys']=df['time_between_two_surveys'].fillna(-9999)
+# df['distance_m']=df['distance_m'].fillna(-9999)
 # Get the number of rows and columns in the DataFrame
+###Merging with skip rates
+
+# updating skips rates
+
+### Reading in the data
+gc=gspread.service_account(filename=f'credentials.json')
+key_='1lnQ9R9i1RS9IBl_9QPzmrMHXAHRZjr751UMKSB_k13E'
+sh=gc.open_by_key(key_)
+
+#### controlling outliers
+df_pre=sh.worksheet('Data').get_all_records()
+# working on the gsheets returned
+df_new = pd.DataFrame(df_pre)
+
+
+gc=gspread.service_account(filename=f'credentials.json')
+key_='1iJ_GDl0FqZxEr2vvi469zUlsVfg3F9AA-Gaw3SmqEt4'
+sh=gc.open_by_key(key_)
+
+#### controlling outliers
+surveyp=sh.worksheet('survey').get_all_records()
+skips=sh.worksheet('_skips')
+# working on the gsheets returned
+survey = pd.DataFrame(surveyp)
+
+
+### Preprocessing of survey and choices tab
+#variables are always in lower case and stripped of white space
+survey=survey_preprocessing(survey, 'type')
+survey=survey_preprocessing(survey, 'name')
+survey=survey_columns(survey)
+survey=filtering_unnecessary(survey)
+
+#keeping only the relevant columns
+columns=['type', 'name', 'label:english', 'appearance', 'disabled']
+# keeping only important columns
+survey=survey[columns]
+#augumenting the survey table with a column from the type of the question and the value label for that question
+survey['type_new']=survey['type'].apply(lambda x:get_type(x))
+survey['val_label']=survey['type'].apply(lambda x:get_val_label(x))
+
+
+### keeping only the most relevant variables
+survey=survey[survey['type_new'].isin(['select_one', 'select_multiple', 'decimal', 'integer'])]
+
+### Important Functions
+def variables_handler(old_var):
+    """Handling variables as in variables in a repeat group or not"""
+    if old_var in data_csv.columns:
+        return [old_var]
+    return [f"{old_var}_{i}" for i in range(100) if f"{old_var}_{i}" in data_csv.columns]
+
+
+
+#### keeping only the relevant variables
+data_csv=df_new
+_variables=[]
+for index, row in survey.iterrows():
+    variable=variables_handler(row['name'])
+    if variable==[]:
+        print(row['name'])
+    else:
+        _variables.extend(variable)
+
+
+### missing count
+data_main=df_new[_variables+['key']]
+data_main=data_main.replace("", np.nan)
+data_main['missing_cnt']=data_main.isna().sum(axis=1)
+
+
+### proportions of missing to _all
+data_main['proportion_main']=data_main['missing_cnt']/len(_variables)
+
+###keeping just relevant data
+data_main=data_main[['key', 'missing_cnt', 'proportion_main']]
+data_main.to_excel('main2.xlsx')
+
+df=pd.merge(df, data_main, how='inner', on='key')
+
 num_rows, num_cols = df.shape
 
 # For example, updating from cell A2 (row 2, column 1)
