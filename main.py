@@ -1028,7 +1028,7 @@ df = pd.concat([df, dummies], axis=1)
 
 ### Testing 
 df=df[['today','starttime', 'endtime','cs_enumname_name', 'shifted_starttime', 'time_between_two_surveys', 'distance_m','reg_name', 'hhid_confirmed', '0','1','2','3','4','5','6','7','8','9','key']]
-df=df.astype('str')
+# df=df.astype('str')
 # df.replace('nan', '', inplace=True)
 # Get the number of rows and columns in the DataFrame
 num_rows, num_cols = df.shape
