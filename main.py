@@ -1113,8 +1113,8 @@ data_main['missing_cnt']=data_main.isna().sum(axis=1)
 data_main['proportion_main']=data_main['missing_cnt']/len(_variables)
 
 ###keeping just relevant data
-data_main=data_main[['key', 'missing_cnt', 'proportion_main']]
-data_main.to_excel('main2.xlsx')
+data_main=data_main[['key', 'missing_cnt', 'proportion_main', 'm0s2_q1', 'm0s2_q4','m0s2_q6']]
+# data_main.to_excel('main2.xlsx')
 
 df=pd.merge(df, data_main, how='inner', on='key')
 
