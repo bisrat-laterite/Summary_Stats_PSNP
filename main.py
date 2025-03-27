@@ -1059,7 +1059,7 @@ sh=gc.open_by_key(key_)
 
 #### controlling outliers
 surveyp=sh.worksheet('survey').get_all_records()
-skips=sh.worksheet('_skips')
+# skips=sh.worksheet('_skips')
 # working on the gsheets returned
 survey = pd.DataFrame(surveyp)
 
