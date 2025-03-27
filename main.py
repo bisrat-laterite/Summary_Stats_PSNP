@@ -1104,7 +1104,7 @@ for index, row in survey.iterrows():
 
 
 ### missing count
-data_main=df_new[_variables+['key']]
+data_main=df_new[_variables+['key', 'duration']]
 data_main=data_main.replace("", np.nan)
 data_main['missing_cnt']=data_main.isna().sum(axis=1)
 
