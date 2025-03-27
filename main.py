@@ -1113,7 +1113,7 @@ data_main['missing_cnt']=data_main.isna().sum(axis=1)
 data_main['proportion_main']=data_main['missing_cnt']/len(_variables)
 
 ###keeping just relevant data
-data_main=data_main[['key', 'missing_cnt', 'proportion_main', 'm0s2_q1', 'm0s2_q4','m0s2_q6']]
+data_main=data_main[['key', 'missing_cnt', 'proportion_main', 'm0s2_q1', 'm0s2_q4','m0s2_q6', 'duration']]
 # data_main.to_excel('main2.xlsx')
 data_main['m0s2_q1']=data_main['m0s2_q1'].fillna(9999)
 data_main['m0s2_q4']=data_main['m0s2_q4'].fillna(9999)
