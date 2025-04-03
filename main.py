@@ -992,7 +992,7 @@ df=df[~pd.isna(df['m0s1_q17_1latitude'])]
 df=df.sort_values(by=['cs_enumname_name','starttime'])
 
 ### Shifting starttime
-df['shifted_starttime']=df.groupby('cs_enumname_name')['starttime'].shift(-1)
+df['shifted_starttime']=df.groupby(['today','cs_enumname_name'])['starttime'].shift(-1)
 
 
 df['time_between_two_surveys']=((df['endtime'] - df['shifted_starttime']).dt.total_seconds() / 60)*(-1)
@@ -1001,7 +1001,7 @@ df['time_between_two_surveys'] = df.groupby(['today', 'cs_enumname_name'])['time
 
 ### shifting gps
 df['lat_lon']=df[['m0s1_q17_1latitude', 'm0s1_q17_1longitude']].values.tolist()
-df['shifted_gps']=df.groupby('cs_enumname_name')['lat_lon'].shift(-1)
+df['shifted_gps']=df.groupby(['today','cs_enumname_name'])['lat_lon'].shift(-1)
 # df['shifted_gps']=df.groupby('cs_enumname_name')['lat_lon'].shift(-1)
 
 
